@@ -1,4 +1,4 @@
-# Mini-GRC — miniature compliance automation platform
+# Mini-GRC - miniature compliance automation platform
 
 A small SaaS that tracks security controls and compliance evidence, with an AI agent that does the
 smart part: ingesting policy documents / security-tool exports and mapping findings onto SOC 2 and
@@ -56,7 +56,7 @@ view mapped findings → OpenAPI/Swagger).
 ```
 
 **Why Onion (the interview answer):** dependencies only point *inward*. The Domain owns the
-entities and the abstract repository/unit-of-work **ports** — it has no idea EF Core or PostgreSQL
+entities and the abstract repository/unit-of-work **ports** - it has no idea EF Core or PostgreSQL
 exist. The Infrastructure layer is the *only* place that knows about a database provider; it
 implements those ports. The Application layer holds use-case logic (CQRS handlers) and depends on
 the ports, never on Infrastructure. The API/Web are the outer shell that wires everything together
@@ -73,22 +73,22 @@ technology be swapped without touching domain logic.
 4. `CreateControlHandler` uses the `IUnitOfWork` port to add a `Control` aggregate and `SaveChangesAsync()`.
 5. The handler returns a `ControlDto` (via Mapster). The controller returns `201 Created`.
 
-No handler ever touches `DbContext` or `Npgsql` directly — only the `IUnitOfWork` abstraction.
+No handler ever touches `DbContext` or `Npgsql` directly - only the `IUnitOfWork` abstraction.
 
 ---
 
-## The agent (M5) — design & failure modes
+## The agent (M5) - design & failure modes
 
 `MiniGrc.Agent` turns raw security input into mapped, actionable findings.
 
 - **Input:** a source name, a format (`json` for tool exports, `text` for policy prose), the raw
   payload, and a target framework (`Soc2` / `Iso27001`).
-- **LLM path:** if `Agent:LlmEndpoint` is configured, `OpenAiCompatibleClient` (OpenAI-compatible —
+- **LLM path:** if `Agent:LlmEndpoint` is configured, `OpenAiCompatibleClient` (OpenAI-compatible -
   works with LM Studio, Ollama, OpenAI) sends a framed prompt and asks for strict JSON
   (`findings[]` + `risk_summary`). The response is parsed defensively (markdown fences stripped).
 - **Deterministic fallback:** if the LLM is unreachable or returns unusable JSON, the agent degrades
   to `DeterministicAnalyzer`, which parses the input with a `ControlCatalog` keyword matcher and
-  writes a plain risk summary. **The product always produces a result** — the LLM is an enhancement,
+  writes a plain risk summary. **The product always produces a result** - the LLM is an enhancement,
   never a hard dependency. This is the key design decision and the answer to "what are its failure
   modes": network down, model timeout, malformed JSON → graceful fallback, logged, still useful.
 - **Mapping:** findings are matched to the best control code by keyword score
@@ -155,7 +155,7 @@ exercising create-control → upload-evidence → run-agent → view-status agai
   Interactive elements carry `data-testid` for Playwright.
 - `NU1903` are advisory transitive-dependency warnings (Npgsql → `System.Security.Cryptography.Xml`,
   SwaggerUI → `Microsoft.OpenApi 2.0.0`); suppressed solution-wide in `Directory.Build.props` with a
-  comment explaining why — no code change mitigates them without forking the ecosystem packages.
+  comment explaining why - no code change mitigates them without forking the ecosystem packages."
 
 ---
 
