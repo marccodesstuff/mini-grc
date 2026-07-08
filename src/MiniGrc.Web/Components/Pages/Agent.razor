@@ -1,0 +1,76 @@
+@page "/agent"
+@using MiniGrc.Web.Services
+@using MiniGrc.ComponentLib.Components
+@inject ApiClient Api
+@rendermode InteractiveServer
+
+<PageTitle>Mini-GRC · Agent</PageTitle>
+
+<GrcSectionHeader Title="Compliance Agent" Subtitle="Map security-tool findings to SOC 2 / ISO 27001 controls" TestId="agent-header" />
+
+<GrcCard Title="Run Agent" TestId="agent-run-card">
+    <div class="form-grid">
+        <input class="grc-input" data-testid="input-source" @bind="Source" placeholder="Source (e.g. github-dependabot)" />
+        <select class="grc-input" data-testid="input-format">
+            <option value="json">JSON (tool export)</option>
+            <option value="text">Text (policy prose)</option>
+        </select>
+        <select class="grc-input" data-testid="input-framework" @bind="Framework">
+            <option value="Soc2">SOC 2</option>
+            <option value="Iso27001">ISO 27001</option>
+        </select>
+        <textarea class="grc-input grc-textarea" data-testid="input-content" @bind="Content" placeholder='{"findings":[{"title":"...","severity":"high","id":"DEP-1"}]}'></textarea>
+    </div>
+    <GrcButton Variant="primary" TestId="btn-run-agent" OnClick="RunAsync">Run Agent</GrcButton>
+    @if (_running)
+    {
+        <p data-testid="agent-running">Running…</p>
+    }
+    @if (_result is not null)
+    {
+        <div class="agent-result" data-testid="agent-result">
+            <p><strong>Mode:</strong> @(_result.UsedLlm ? "LLM" : "Deterministic fallback") · <strong>@_result.MappedCount</strong> mapped · @_result.ElapsedMs ms</p>
+            <p data-testid="agent-summary">@_result.RiskSummary</p>
+            <ul>
+                @foreach (var f in _result.Findings)
+                {
+                    <li data-testid="agent-finding-@f.ExternalId">
+                        <strong>@f.Title</strong> → @(f.MappedControlCode ?? "no mapping")
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</GrcCard>
+
+@code {
+    private string Source = "github-dependabot";
+    private string Framework = "Soc2";
+    private string Content = "{\"findings\":[{\"title\":\"Critical RCE in log4j\",\"severity\":\"critical\",\"id\":\"DEP-101\"},{\"title\":\"Outdated TLS certificate\",\"severity\":\"low\",\"id\":\"DEP-102\"}]}";
+    private bool _running;
+    private AgentResult? _result;
+
+    private async Task RunAsync()
+    {
+        _running = true;
+        _result = null;
+        try
+        {
+            _result = await Api.RunAgentAsync(new
+            {
+                source = Source,
+                format = "json",
+                framework = Framework,
+                content = Content
+            });
+        }
+        catch (Exception ex)
+        {
+            _result = new AgentResult(Array.Empty<AgentFinding>(), 0, $"Error: {ex.Message}", false, 0);
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+}

@@ -1,0 +1,97 @@
+@page "/evidence"
+@using MiniGrc.Web.Services
+@using MiniGrc.ComponentLib.Components
+@using MiniGrc.Application.DTOs
+@inject ApiClient Api
+@rendermode InteractiveServer
+
+<PageTitle>Mini-GRC · Evidence</PageTitle>
+
+<GrcSectionHeader Title="Evidence Upload" Subtitle="Attach and track compliance evidence per control" TestId="evidence-header" />
+
+@if (_controls is null)
+{
+    <p data-testid="evidence-loading">Loading controls…</p>
+}
+else
+{
+    <GrcCard Title="Controls" TestId="evidence-controls">
+        <table class="grc-table">
+            <thead><tr><th>Code</th><th>Title</th><th>Evidence</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var c in _controls)
+                {
+                    <tr data-testid="evidence-row-@c.Code">
+                        <td>@c.Code</td>
+                        <td>@c.Title</td>
+                        <td>@c.ApprovedEvidenceCount / @c.EvidenceCount approved</td>
+                        <td><GrcButton Variant="secondary" TestId="@($"btn-upload-{c.Code}")" OnClick="@(() => OpenUpload(c))">Upload</GrcButton></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </GrcCard>
+}
+
+<GrcModal Visible="_modalOpen" Title="@($"Upload evidence · {_selected?.Code}")" TestId="evidence-modal" OnClose="CloseUpload">
+    <div class="form-grid">
+        <input class="grc-input" data-testid="input-filename" @bind="FileName" placeholder="File name (e.g. policy.pdf)" />
+        <input class="grc-input" data-testid="input-contenttype" @bind="ContentType" placeholder="Content type (e.g. application/pdf)" />
+        <input class="grc-input" type="number" data-testid="input-size" @bind="SizeBytes" placeholder="Size in bytes" />
+        <input class="grc-input" data-testid="input-uploader" @bind="UploadedBy" placeholder="Uploaded by" />
+    </div>
+    <GrcButton Variant="primary" TestId="btn-submit-evidence" OnClick="SubmitAsync">Attach Evidence</GrcButton>
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <p class="grc-error" data-testid="evidence-error">@_error</p>
+    }
+</GrcModal>
+
+@code {
+    private IReadOnlyList<ControlDto>? _controls;
+    private ControlDto? _selected;
+    private bool _modalOpen;
+    private string _error = string.Empty;
+
+    private string FileName = string.Empty;
+    private string ContentType = "application/pdf";
+    private string SizeBytes = "1024";
+    private string UploadedBy = "compliance-team";
+
+    protected override async Task OnInitializedAsync() => _controls = await Api.GetControlsAsync();
+
+    private void OpenUpload(ControlDto c)
+    {
+        _selected = c;
+        _modalOpen = true;
+        _error = string.Empty;
+    }
+
+    private void CloseUpload()
+    {
+        _modalOpen = false;
+        _selected = null;
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (_selected is null) return;
+        _error = string.Empty;
+        try
+        {
+            await Api.AttachEvidenceAsync(_selected.Id, new
+            {
+                fileName = FileName,
+                contentType = ContentType,
+                sizeBytes = long.Parse(SizeBytes),
+                uploadedBy = UploadedBy
+            });
+            CloseUpload();
+            _controls = await Api.GetControlsAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+}

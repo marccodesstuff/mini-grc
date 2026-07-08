@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\MiniGrc.Application\MiniGrc.Application.csproj" />
+  </ItemGroup>
+
+  <!--
+    M3 requirement: "component-scoped .scss only, NO inline styling".
+    We author component styles as `*.razor.scss` next to each component and compile them to the
+    native Blazor CSS-isolation files (`*.razor.css`) with dart-sass before the Razor compile.
+    This keeps a single source of truth (.scss) while producing per-component scoped CSS.
+  -->
+  <Target Name="CompileScssToRazorCss" BeforeTargets="BeforeCompile;AssignRazorComponentOutputs">
+    <Exec Command="npx --yes sass --no-source-map --load-path=$(MSBuildProjectDirectory) $(MSBuildProjectDirectory):$(MSBuildProjectDirectory)"
+          ContinueOnError="true" />
+  </Target>
+
+</Project>

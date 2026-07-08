@@ -1,0 +1,6 @@
+@MiniGrc.Api_HostAddress = http://localhost:5288
+
+GET {{MiniGrc.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

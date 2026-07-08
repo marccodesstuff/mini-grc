@@ -1,0 +1,16 @@
+@namespace MiniGrc.ComponentLib.Components
+.grc-section {
+  margin: 1.5rem 0 1rem;
+}
+.grc-section__title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.grc-section__subtitle {
+  color: #64748b;
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+}

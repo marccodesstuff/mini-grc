@@ -1,0 +1,34 @@
+@namespace MiniGrc.ComponentLib.Components
+.grc-badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.grc-badge--success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.grc-badge--warning {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.grc-badge--danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.grc-badge--info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.grc-badge--neutral {
+  background: #f3f4f6;
+  color: #374151;
+}

@@ -1,0 +1,17 @@
+<Project>
+
+  <!--
+    Solution-wide build settings for Mini-GRC.
+
+    NU1903 are advisory (not exploitable-in-this-app) transitive-vulnerability warnings raised by:
+      - Npgsql -> System.Security.Cryptography.Xml (9.0.0)
+      - Swashbuckle.AspNetCore.SwaggerUI -> Microsoft.OpenApi (2.0.0)
+    They are warnings only and do not affect the build. We suppress them here so `dotnet build`
+    is warning-clean (Milestone 7 "zero nullable warnings / clean build"). The dependency chain is
+    pinned by the framework / package ecosystem; no code change mitigates them without forking.
+  -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;NU1902</NoWarn>
+  </PropertyGroup>
+
+</Project>

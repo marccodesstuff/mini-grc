@@ -1,0 +1,27 @@
+@namespace MiniGrc.ComponentLib.Components
+.grc-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.grc-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.grc-card__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+  color: #111827;
+}
+
+.grc-card__body {
+  color: #374151;
+  font-size: 0.95rem;
+}

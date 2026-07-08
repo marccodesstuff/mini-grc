@@ -1,0 +1,29 @@
+@namespace MiniGrc.ComponentLib.Components
+
+<div class="grc-card" data-testid="@TestId">
+    @if (!string.IsNullOrWhiteSpace(Title))
+    {
+        <div class="grc-card__header">
+            <h3 class="grc-card__title">@Title</h3>
+            @if (HeaderAction != null)
+            {
+                <div class="grc-card__action">@HeaderAction</div>
+            }
+        </div>
+    }
+    <div class="grc-card__body">@ChildContent</div>
+</div>
+
+@code {
+    /// <summary>Optional card title shown in the header.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Stable automation selector.</summary>
+    [Parameter] public string TestId { get; set; } = "grc-card";
+
+    /// <summary>Optional content rendered on the right of the header (e.g. a button).</summary>
+    [Parameter] public RenderFragment? HeaderAction { get; set; }
+
+    /// <summary>Card body content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MiniGrc.Agent/MiniGrc.Agent.csproj" />
+    <Project Path="src/MiniGrc.Api/MiniGrc.Api.csproj" />
+    <Project Path="src/MiniGrc.Application/MiniGrc.Application.csproj" />
+    <Project Path="src/MiniGrc.ComponentLib/MiniGrc.ComponentLib.csproj" />
+    <Project Path="src/MiniGrc.Domain/MiniGrc.Domain.csproj" />
+    <Project Path="src/MiniGrc.Infrastructure/MiniGrc.Infrastructure.csproj" />
+    <Project Path="src/MiniGrc.Web/MiniGrc.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MiniGrc.E2E/MiniGrc.E2E.csproj" />
+    <Project Path="tests/MiniGrc.UnitTests/MiniGrc.UnitTests.csproj" />
+  </Folder>
+</Solution>

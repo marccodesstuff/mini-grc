@@ -1,0 +1,44 @@
+@namespace MiniGrc.ComponentLib.Components
+.grc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+.grc-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.grc-btn--primary {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+.grc-btn--primary:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.grc-btn--secondary {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+.grc-btn--secondary:hover:not(:disabled) {
+  background-color: #d1d5db;
+}
+
+.grc-btn--danger {
+  background-color: #dc2626;
+  color: #fff;
+}
+
+.grc-btn--danger:hover:not(:disabled) {
+  background-color: #b91c1c;
+}

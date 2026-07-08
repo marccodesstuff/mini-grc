@@ -1,0 +1,29 @@
+# Build output
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# .NET
+appsettings.*.json
+**/Properties/launchSettings.json
+
+# Node / sass artifacts
+node_modules/
+
+# Playwright
+test-results/
+playwright-report/
+.playwright/
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local secrets
+secrets.json

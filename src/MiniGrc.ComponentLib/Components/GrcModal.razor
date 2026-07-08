@@ -1,0 +1,40 @@
+@namespace MiniGrc.ComponentLib.Components
+
+@if (Visible)
+{
+    <div class="grc-modal__overlay" data-testid="grc-modal-overlay" @onclick="OnOverlayClick">
+        <div class="grc-modal" data-testid="@TestId" role="dialog" aria-modal="true">
+            <div class="grc-modal__header">
+                <h3 class="grc-modal__title">@Title</h3>
+                <button class="grc-modal__close" data-testid="grc-modal-close" @onclick="OnClose">×</button>
+            </div>
+            <div class="grc-modal__body">@ChildContent</div>
+            @if (Footer != null)
+            {
+                <div class="grc-modal__footer">@Footer</div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>Whether the modal is shown.</summary>
+    [Parameter] public bool Visible { get; set; }
+
+    /// <summary>Modal title.</summary>
+    [Parameter] public string Title { get; set; } = string.Empty;
+
+    /// <summary>Stable automation selector for the dialog.</summary>
+    [Parameter] public string TestId { get; set; } = "grc-modal";
+
+    /// <summary>Requested close (X button or overlay click).</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    /// <summary>Optional footer (action buttons).</summary>
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>Modal body content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private void OnOverlayClick() => OnClose.InvokeAsync();
+}

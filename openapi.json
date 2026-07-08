@@ -1,0 +1,1010 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "MiniGrc.Api | v1",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5050/"
+    }
+  ],
+  "paths": {
+    "/api/v1/agent/run": {
+      "post": {
+        "tags": [
+          "Agent"
+        ],
+        "summary": "Runs the agent against the supplied input. The agent maps findings to SOC 2 / ISO 27001\r\ncontrols, drafts remediation tasks, and writes a risk summary. It uses an LLM when one is\r\nconfigured, otherwise falls back to a deterministic analyzer (always succeeds).",
+        "requestBody": {
+          "description": "The agent input (source, format, content, framework).",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunAgentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunAgentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunAgentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Agent run completed (see `usedLlm` to know which path ran).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/controls": {
+      "get": {
+        "tags": [
+          "Controls"
+        ],
+        "summary": "Lists all controls, optionally filtered by compliance framework.",
+        "parameters": [
+          {
+            "name": "framework",
+            "in": "query",
+            "description": "Optional framework filter (\"Soc2\" or \"Iso27001\").",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the controls.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ControlDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Controls"
+        ],
+        "summary": "Creates a new control.",
+        "requestBody": {
+          "description": "The control attributes.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateControlRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateControlRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateControlRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Control created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/controls/{id}": {
+      "get": {
+        "tags": [
+          "Controls"
+        ],
+        "summary": "Gets a single control by its id.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The control id.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Control found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Control not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Controls"
+        ],
+        "summary": "Updates mutable metadata on a control.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The control id.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The updated fields.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateControlRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateControlRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateControlRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Control updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Control not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/controls/{id}/evidence": {
+      "post": {
+        "tags": [
+          "Controls"
+        ],
+        "summary": "Attaches an evidence artifact (metadata only) to a control.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The control id.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The evidence metadata.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachEvidenceRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachEvidenceRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachEvidenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Evidence attached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenceDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Control not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/controls/{id}/evidence/{evidenceId}/review": {
+      "post": {
+        "tags": [
+          "Controls"
+        ],
+        "summary": "Records a reviewer decision on a control's evidence artifact.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The control id.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "evidenceId",
+            "in": "path",
+            "description": "The evidence id.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The outcome and optional reviewer.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewEvidenceRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewEvidenceRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewEvidenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Evidence reviewed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Control not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/compliance/status": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "Returns the aggregated compliance status (coverage, counts, per-framework rollup).",
+        "responses": {
+          "200": {
+            "description": "Returns the status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceStatusDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risks": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "Returns the risk register.",
+        "responses": {
+          "200": {
+            "description": "Returns the risks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RiskDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/findings": {
+      "get": {
+        "tags": [
+          "Findings"
+        ],
+        "summary": "Lists findings, optionally filtered to those the agent has not yet mapped.",
+        "parameters": [
+          {
+            "name": "onlyUnmapped",
+            "in": "query",
+            "description": "When true, returns only unmapped findings.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the findings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FindingDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AgentResult": {
+        "required": [
+          "findings",
+          "mappedCount",
+          "riskSummary",
+          "usedLlm",
+          "elapsedMs"
+        ],
+        "type": "object",
+        "properties": {
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExtractedFinding"
+            }
+          },
+          "mappedCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "riskSummary": {
+            "type": "string"
+          },
+          "usedLlm": {
+            "type": "boolean"
+          },
+          "elapsedMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "AttachEvidenceRequest": {
+        "required": [
+          "fileName",
+          "contentType",
+          "sizeBytes",
+          "uploadedBy"
+        ],
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "uploadedBy": {
+            "type": "string"
+          }
+        },
+        "description": "Payload for attaching evidence metadata."
+      },
+      "ComplianceFramework": {
+        "type": "integer"
+      },
+      "ComplianceStatusDto": {
+        "type": "object",
+        "properties": {
+          "totalControls": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "verifiedControls": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "partialControls": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "notImplementedControls": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "coveragePercent": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "byFramework": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FrameworkBreakdownDto"
+            }
+          }
+        }
+      },
+      "ControlDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "framework": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "evidenceCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "approvedEvidenceCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "updatedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateControlRequest": {
+        "required": [
+          "code",
+          "title",
+          "description",
+          "framework",
+          "owner"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "framework": {
+            "$ref": "#/components/schemas/ComplianceFramework"
+          },
+          "owner": {
+            "type": "string"
+          }
+        },
+        "description": "Payload for creating a control."
+      },
+      "EvidenceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "uploadedBy": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reviewer": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "EvidenceStatus": {
+        "type": "integer"
+      },
+      "ExtractedFinding": {
+        "required": [
+          "title",
+          "description",
+          "severity",
+          "externalId",
+          "mappedControlCode",
+          "remediations"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "severity": {
+            "$ref": "#/components/schemas/FindingSeverity"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "mappedControlCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "remediations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RemediationSuggestion"
+            }
+          }
+        }
+      },
+      "FindingDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "severity": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "mapped": {
+            "type": "boolean"
+          },
+          "mappedControlId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "suggestedControlCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "remediationTasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RemediationTaskDto"
+            }
+          }
+        }
+      },
+      "FindingSeverity": {
+        "type": "integer"
+      },
+      "FrameworkBreakdownDto": {
+        "type": "object",
+        "properties": {
+          "framework": {
+            "type": "string"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "verified": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "RemediationPriority": {
+        "type": "integer"
+      },
+      "RemediationSuggestion": {
+        "required": [
+          "title",
+          "detail",
+          "priority"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "priority": {
+            "$ref": "#/components/schemas/RemediationPriority"
+          }
+        }
+      },
+      "RemediationTaskDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "priority": {
+            "type": "string"
+          }
+        }
+      },
+      "ReviewEvidenceRequest": {
+        "required": [
+          "outcome",
+          "reviewer"
+        ],
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "$ref": "#/components/schemas/EvidenceStatus"
+          },
+          "reviewer": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Payload for a reviewer decision."
+      },
+      "RiskDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "likelihood": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "impact": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "accepted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RunAgentRequest": {
+        "required": [
+          "source",
+          "format",
+          "content",
+          "framework"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "framework": {
+            "type": "string"
+          }
+        },
+        "description": "Payload for running the compliance agent."
+      },
+      "UpdateControlRequest": {
+        "required": [
+          "title",
+          "description",
+          "owner"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          }
+        },
+        "description": "Payload for updating a control."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Agent"
+    },
+    {
+      "name": "Controls"
+    },
+    {
+      "name": "Dashboard"
+    },
+    {
+      "name": "Findings"
+    }
+  ]
+}

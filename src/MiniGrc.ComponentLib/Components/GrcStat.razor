@@ -1,0 +1,17 @@
+@namespace MiniGrc.ComponentLib.Components
+
+<div class="grc-stat" data-testid="@TestId">
+    <div class="grc-stat__value">@Value</div>
+    <div class="grc-stat__label">@Label</div>
+</div>
+
+@code {
+    /// <summary>Big metric value.</summary>
+    [Parameter] public string Value { get; set; } = "0";
+
+    /// <summary>Metric caption.</summary>
+    [Parameter] public string Label { get; set; } = string.Empty;
+
+    /// <summary>Stable automation selector.</summary>
+    [Parameter] public string TestId { get; set; } = "grc-stat";
+}
