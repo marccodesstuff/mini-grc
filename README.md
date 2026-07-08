@@ -6,9 +6,6 @@ ISO 27001 controls. Built to mirror **Compyl's** problem space and exact stack
 (**C# / .NET 10, Onion Architecture, CQRS via MediatR, EF Core + PostgreSQL, Blazor, OpenAPI 3.1.1,
 Playwright, an LLM agent layer**).
 
-> This is a portfolio / screening project. It is intentionally small but every feature maps to a
-> real Compyl requirement so it can be discussed end-to-end in an interview.
-
 **Demo walkthrough:** `demo/demo.gif` (Dashboard → create control → upload evidence → run agent →
 view mapped findings → OpenAPI/Swagger).
 
