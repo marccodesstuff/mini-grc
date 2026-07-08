@@ -18,7 +18,7 @@
     compiles them two ways:
       (1) to native Blazor CSS-isolation files (*.razor.css) so each component stays scoped, and
       (2) to a single global bundle (wwwroot/MiniGrc.ComponentLib.css) that the consuming Web app
-          links in App.razor, so the CompylBase styles actually apply across the app.
+          links in App.razor, so the GrcBase styles actually apply across the app.
   -->
   <Target Name="CompileScssToRazorCss" BeforeTargets="BeforeCompile;AssignRazorComponentOutputs">
     <Exec Command="npx --yes sass --no-source-map --load-path=$(MSBuildProjectDirectory) $(MSBuildProjectDirectory):$(MSBuildProjectDirectory)"

@@ -2,12 +2,12 @@
 
 A small SaaS that tracks security controls and compliance evidence, with an AI agent that does the
 smart part: ingesting policy documents / security-tool exports and mapping findings onto SOC 2 and
-ISO 27001 controls. Built to mirror **Compyl's** problem space and exact stack
+ISO 27001 controls. Built to mirror a real compliance-automation platform's problem space and exact stack
 (**C# / .NET 10, Onion Architecture, CQRS via MediatR, EF Core + PostgreSQL, Blazor, OpenAPI 3.1.1,
 Playwright, an LLM agent layer**).
 
 > This is a portfolio / screening project. It is intentionally small but every feature maps to a
-> real Compyl requirement so it can be discussed end-to-end in an interview.
+> real-world compliance-platform requirement so it can be discussed end-to-end in an interview.
 
 **Demo walkthrough:** `demo/demo.gif` (Dashboard → create control → upload evidence → run agent →
 view mapped findings → OpenAPI/Swagger).
@@ -18,11 +18,11 @@ view mapped findings → OpenAPI/Swagger).
 
 ## Feature → requirement map
 
-| Milestone | What it demonstrates | Compyl signal |
+| Milestone | What it demonstrates | Target signal |
 |-----------|----------------------|---------------|
 | M1 Onion | Domain / Application / Infrastructure / API split with dependency direction enforced | "Onion Architecture on the backend" |
 | M2 CQRS | MediatR commands + queries, validation pipeline, EF Core repositories, migrations | "writing efficient CQRS handlers", "relational databases" |
-| M3 Blazor | Control library, evidence upload, compliance dashboard; shared **CompylBase** component lib; **component-scoped `.scss` only**; `data-testid` on interactives | "developing Blazor components", "no inline styling", "CompylBase components" |
+| M3 Blazor | Control library, evidence upload, compliance dashboard; shared **GrcBase** component library; **component-scoped `.scss` only**; `data-testid` on interactives | "developing Blazor components", "no inline styling", "GrcBase components" |
 | M4 OpenAPI | Native **OpenAPI 3.1.1** document with **mandatory XML docs on every endpoint** injected into the spec | "Strict adherence to OpenAPI 3.1.1 with mandatory XML documentation" |
 | M5 Agent | LLM agent that ingests JSON/policy input, maps findings → controls, drafts remediation + risk summary; **offline-safe deterministic fallback** | "building secure, autonomous software agents", "AI orchestration" |
 | M6 Playwright | E2E over the `data-testid` selectors (create control → upload evidence → run agent → view status) | "automated testing (Playwright)", "selectors perfectly mapped" |
@@ -170,7 +170,7 @@ src/
   MiniGrc.Infrastructure/ EF Core DbContext, repository impls, PostgreSQL migrations
   MiniGrc.Api/           ASP.NET Core controllers, OpenAPI 3.1.1 + XML docs, agent endpoint
   MiniGrc.Agent/         LLM client, ControlCatalog, deterministic analyzer, orchestration
-  MiniGrc.ComponentLib/  CompylBase shared Blazor components (.razor + .razor.scss)
+  MiniGrc.ComponentLib/  GrcBase shared Blazor components (.razor + .razor.scss)
   MiniGrc.Web/           Blazor front end (Dashboard, Controls, Evidence, Agent pages)
 tests/
   MiniGrc.UnitTests/     handler tests against an in-memory IUnitOfWork
