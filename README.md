@@ -1,4 +1,4 @@
-# Mini-GRC - miniature compliance automation platform
+# Augur (Mini-GRC) - miniature compliance automation platform
 
 A small SaaS that tracks security controls and compliance evidence, with an AI agent that does the
 smart part: ingesting policy documents / security-tool exports and mapping findings onto SOC 2 and
