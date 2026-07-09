@@ -35,7 +35,6 @@ public sealed class Program
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(connectionString);
         builder.Services.AddAgent(builder.Configuration);
-        builder.Services.AddSingleton<McpToolBinder>();
 
         // ---- MVC / controllers ----
         builder.Services.AddControllers()
