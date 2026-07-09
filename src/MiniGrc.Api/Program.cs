@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using MiniGrc.Api.OpenApi;
 using MiniGrc.Api.Requests;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using MiniGrc.Application;
 using MiniGrc.Domain;
@@ -11,6 +12,7 @@ using MiniGrc.Infrastructure.Persistence;
 using MiniGrc.Agent;
 using MediatR;
 using MiniGrc.Application.Commands;
+using MiniGrc.Api.Mcp;
 
 namespace MiniGrc.Api;
 
@@ -33,6 +35,7 @@ public sealed class Program
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(connectionString);
         builder.Services.AddAgent(builder.Configuration);
+        builder.Services.AddSingleton<McpToolBinder>();
 
         // ---- MVC / controllers ----
         builder.Services.AddControllers()
@@ -83,8 +86,42 @@ public sealed class Program
         app.UseCors("BlazorClient");
         app.MapControllers();
         app.MapOpenApi();
-
+        app.MapGet("/mcp", async context =>
+        {
+            var binder = context.RequestServices.GetRequiredService<McpToolBinder>();
+            using var doc = await JsonDocument.ParseAsync(context.Request.Body, cancellationToken: context.RequestAborted);
+            var root = doc.RootElement;
+            var method = root.GetProperty("method").GetString() ?? "";
+            var id = root.TryGetProperty("id", out var idEl) ? idEl.GetRawText() : "null";
+            var result = method switch
+            {
+                "tools/list" => new { jsonrpc = "2.0", id, result = new { tools = binder.ListTools() } },
+                "tools/call" => await HandleToolCallAsync(root, binder, context.RequestAborted),
+                _ => new { jsonrpc = "2.0", id, error = new { code = -32601, message = $"Method not found: {method}" } }
+            };
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(result, context.RequestAborted);
+        });
         app.Run();
+    }
+
+    private static async Task<object> HandleToolCallAsync(JsonElement root, McpToolBinder binder, CancellationToken ct)
+    {
+        var id = root.TryGetProperty("id", out var idEl) ? idEl.GetRawText() : "null";
+        try
+        {
+            var paramsEl = root.GetProperty("params");
+            var name = paramsEl.GetProperty("name").GetString() ?? "";
+            var args = paramsEl.TryGetProperty("arguments", out var a) ? a : default;
+            var callResult = await binder.CallAsync(new McpToolRequest(name, args), ct);
+            if (callResult.Error is not null)
+                return new { jsonrpc = "2.0", id, result = new { content = new[] { new { type = "text", text = callResult.Error } }, isError = true } };
+            return new { jsonrpc = "2.0", id, result = new { content = new[] { new { type = "text", text = System.Text.Json.JsonSerializer.Serialize(callResult.Result) } } } };
+        }
+        catch (Exception ex)
+        {
+            return new { jsonrpc = "2.0", id, error = new { code = -32603, message = ex.Message } };
+        }
     }
 
     /// <summary>Builds the web application without running it (used by integration tests / E2E).</summary>
