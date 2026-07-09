@@ -38,6 +38,7 @@ view mapped findings → OpenAPI/Swagger).
                 │ HttpClient (typed ApiClient)
 ┌───────────────▼──────────────────────────────────────────────────────┐
 │  MiniGrc.Api (ASP.NET Core, controllers, OpenAPI 3.1.1, Swagger UI)    │  API / Host
+│  + /mcp JSON-RPC bridge (tools/list, tools/call)                        │
 └───────────────┬──────────────────────────────────────────────────────┘
                 │ MediatR
 ┌───────────────▼──────────────────────────────────────────────────────┐
@@ -100,6 +101,34 @@ No handler ever touches `DbContext` or `Npgsql` directly - only the `IUnitOfWork
 **Run it offline:** leave `Agent:LlmEndpoint` empty in `appsettings.json` → deterministic only.
 **Run it with a local model:** point `Agent:LlmEndpoint` at LM Studio's
 `http://localhost:1234/v1` and set `Agent:Model` to your loaded model id.
+
+---
+
+## MCP bridge
+
+A thin JSON-RPC bridge at **`POST /mcp`** exposes Mini-GRC tools to any MCP-compatible client
+(Claude Desktop, Cursor, etc.) without depending on a specific MCP server SDK.
+
+- **`tools/list`** → returns the available tool definitions (`controls.list`, `control.create`,
+  `agent.run`).
+- **`tools/call`** → routes the request through the existing MediatR/agent pipeline and returns a
+  JSON-RPC `2.0` response with the result.
+
+**Design choice:** instead of self-hosting a sealed MCP server, Mini-GRC implements the protocol
+surface it actually needs (`tools/list` + `tools/call`). The same handlers serve the REST API,
+Blazor UI, and MCP clients — no duplicate orchestration.
+
+```bash
+# List tools
+curl -X POST http://localhost:5050/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+
+# Run agent via MCP
+curl -X POST http://localhost:5050/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"agent.run","arguments":{"source":"dependabot","format":"json","content":"...","framework":"Soc2"}}}'
+```
 
 ---
 
@@ -167,7 +196,8 @@ src/
   MiniGrc.Domain/        entities, enums, repository ports, IUnitOfWork
   MiniGrc.Application/   CQRS commands/queries, handlers, FluentValidation, MediatR pipeline, Mapster
   MiniGrc.Infrastructure/ EF Core DbContext, repository impls, PostgreSQL migrations
-  MiniGrc.Api/           ASP.NET Core controllers, OpenAPI 3.1.1 + XML docs, agent endpoint
+  MiniGrc.Api/           ASP.NET Core controllers, OpenAPI 3.1.1 + XML docs, MCP bridge, agent endpoint
+  MiniGrc.Api/Mcp/       McpToolBinder routing MediatR calls through /mcp JSON-RPC
   MiniGrc.Agent/         LLM client, ControlCatalog, deterministic analyzer, orchestration
   MiniGrc.ComponentLib/  GrcBase shared Blazor components (.razor + .razor.scss)
   MiniGrc.Web/           Blazor front end (Dashboard, Controls, Evidence, Agent pages)
