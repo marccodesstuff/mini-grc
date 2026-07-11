@@ -1,10 +1,10 @@
 # Testing
 
-Two test projects, no shared bootstrap magic.
+Two test projects. Two targets: unit speed and real-browser coverage.
 
-## Unit tests (`MiniGrc.UnitTests`)
+## Unit tests
 
-Run against in-memory `IUnitOfWork` implementations. Controllers and handlers are exercised without EF Core or Postgres.
+Run handler rules against in-memory service fakes. No EF, no Postgres, no browser.
 
 ```bash
 dotnet test tests/MiniGrc.UnitTests/MiniGrc.UnitTests.csproj
@@ -12,24 +12,23 @@ dotnet test tests/MiniGrc.UnitTests/MiniGrc.UnitTests.csproj
 
 Current: 4 handler tests passing.
 
-## E2E tests (`MiniGrc.E2E`)
+## E2E tests
 
-Playwright drives the running API + Web apps. Selectors are **`data-testid` only** — no CSS selectors.
+Playwright drives the live API + Web apps over `data-testid` selectors only.
 
-Flows covered:
-1. Create a control
-2. Upload evidence
-3. Run the agent
-4. View compliance status
+Flows:
+- create-control
+- upload-evidence
+- run-agent
+- view-status
 
 ```bash
-# Apps must be running on their configured ports
+# applications must be running
 dotnet test tests/MiniGrc.E2E/MiniGrc.E2E.csproj
 ```
 
 Current: 5 Playwright tests passing.
 
-## Design rules
+## Selector rule
 
-- Unit tests never start the API host.
-- E2E tests never use CSS selectors, hard waits, or test IDs buried in markup that doesn’t represent a user action.
+E2E tests never use CSS class or structure selectors. Only `data-testid`.

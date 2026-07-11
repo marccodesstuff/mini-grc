@@ -29,18 +29,14 @@ Body:
 }
 ```
 
-## Dashboard
+## Dashboard / findings
 
 - `GET /api/v1/compliance/status` — framework compliance rollup
 - `GET /api/v1/risks` — risk register
 - `GET /api/v1/findings` — agent findings, optional `?onlyUnmapped=true`
 
-## MCP bridge
+## Conventions
 
-- `POST /mcp` — JSON-RPC 2.0 endpoint for `tools/list` and `tools/call`.
-
-## Request/response conventions
-
-- All endpoints return `application/json`.
-- Enums serialized as strings (`Soc2`, `Verified`) via `JsonStringEnumConverter`.
-- Errors: controller problem details or JSON-RPC error objects from `/mcp`.
+- `Content-Type: application/json`
+- Enums serialized as strings via `JsonStringEnumConverter`
+- `/mcp` returns JSON-RPC 2.0 objects for `tools/list` and `tools/call`
