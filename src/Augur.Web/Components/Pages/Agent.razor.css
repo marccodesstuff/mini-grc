@@ -1,0 +1,15 @@
+.agent-result strong {
+  color: var(--text);
+}
+.agent-result ul {
+  margin: 0.6rem 0 0;
+  padding-left: 1.1rem;
+}
+.agent-result li {
+  margin: 0.3rem 0;
+  color: #334155;
+}
+.agent-result li strong {
+  color: var(--accent-strong);
+}
+

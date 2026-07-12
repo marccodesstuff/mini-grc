@@ -1,0 +1,45 @@
+@page "/"
+@using Augur.Web.Services
+@using Augur.Web.Components.Layout
+@using Augur.ComponentLib.Components
+@using Augur.Application.DTOs
+@inject ApiClient Api
+@rendermode InteractiveServer
+
+<CascadingValue Value="@(new PageMeta("Dashboard", "Compliance coverage"))">
+<PageTitle>Mini-GRC · Dashboard</PageTitle>
+
+<GrcSectionHeader Title="Compliance Dashboard" Subtitle="Real-time coverage across SOC 2 and ISO 27001" TestId="dashboard-header" />
+
+@if (_status is null)
+{
+    <p data-testid="dashboard-loading">Loading compliance status…</p>
+}
+else
+{
+    <div class="dash-stats">
+        <GrcStat Value="@(_status.TotalControls.ToString())" Label="Total Controls" TestId="stat-total" />
+        <GrcStat Value="@(_status.VerifiedControls.ToString())" Label="Verified" TestId="stat-verified" />
+        <GrcStat Value="@(_status.PartialControls.ToString())" Label="Partial" TestId="stat-partial" />
+        <GrcStat Value="@($"{_status.CoveragePercent:F1}%")" Label="Coverage" TestId="stat-coverage" />
+    </div>
+
+    <GrcCard Title="Coverage by Framework" TestId="framework-breakdown">
+        @foreach (var f in _status.ByFramework)
+        {
+            <div class="fw-row" data-testid="fw-@f.Framework">
+                <span class="fw-name">@f.Framework</span>
+                <span class="fw-count">@f.Verified / @f.Total verified</span>
+            </div>
+        }
+    </GrcCard>
+}
+
+</CascadingValue>
+
+@code {
+    private ComplianceStatusDto? _status;
+
+    protected override async Task OnInitializedAsync() => _status = await Api.GetComplianceStatusAsync();
+}
+

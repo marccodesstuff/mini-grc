@@ -1,0 +1,34 @@
+@using Augur.Web.Components.Layout
+
+<nav class="nav" aria-label="Primary">
+    <div class="nav-section">Workspace</div>
+
+    <NavLink class="nav-link" href="" Match="NavLinkMatch.All" data-testid="nav-dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12l9-9 9 9" /><path d="M5 10v10h14V10" /><path d="M9 21v-6h6v6" />
+        </svg>
+        Dashboard
+    </NavLink>
+
+    <NavLink class="nav-link" href="controls" data-testid="nav-controls">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" /><circle cx="9" cy="6" r="0" /><path d="M8 12l2 2 4-4" />
+        </svg>
+        Controls
+    </NavLink>
+
+    <NavLink class="nav-link" href="evidence" data-testid="nav-evidence">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 3v5h5" /><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M9 13h6" /><path d="M9 17h6" />
+        </svg>
+        Evidence
+    </NavLink>
+
+    <NavLink class="nav-link" href="agent" data-testid="nav-agent">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="4" y="7" width="16" height="12" rx="3" /><path d="M12 7V4" /><circle cx="9" cy="13" r="1.2" /><circle cx="15" cy="13" r="1.2" /><path d="M9 16h6" />
+        </svg>
+        Agent
+    </NavLink>
+</nav>
+

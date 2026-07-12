@@ -33,25 +33,25 @@ view mapped findings → OpenAPI/Swagger).
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│  MiniGrc.Web (Blazor, server interactivity)  ·  MiniGrc.ComponentLib   │  Presentation
+│  Augur.Web (Blazor, server interactivity)  ·  Augur.ComponentLib   │  Presentation
 └───────────────┬──────────────────────────────────────────────────────┘
                 │ HttpClient (typed ApiClient)
 ┌───────────────▼──────────────────────────────────────────────────────┐
-│  MiniGrc.Api (ASP.NET Core, controllers, OpenAPI 3.1.1, Swagger UI)    │  API / Host
+│  Augur.Api (ASP.NET Core, controllers, OpenAPI 3.1.1, Swagger UI)    │  API / Host
 │  + /mcp JSON-RPC bridge (tools/list, tools/call)                        │
 └───────────────┬──────────────────────────────────────────────────────┘
                 │ MediatR
 ┌───────────────▼──────────────────────────────────────────────────────┐
-│  MiniGrc.Application  (CQRS handlers, validators, pipeline, mappings)  │  Application
+│  Augur.Application  (CQRS handlers, validators, pipeline, mappings)  │  Application
 └───────┬───────────────────────────────┬──────────────────────────────┘
         │ ports (IUnitOfWork, I*Repository)│
 ┌───────▼───────────────┐  ┌──────────────▼───────────────────────────┐
-│ MiniGrc.Domain        │  │ MiniGrc.Infrastructure (EF Core + Npgsql)  │
+│ Augur.Domain        │  │ Augur.Infrastructure (EF Core + Npgsql)  │
 │ entities, enums,      │  │ DbContext, repository impls, migrations     │
 │ repository *ports*    │  └──────────────────────┬─────────────────────┘
 └───────────────────────┘                         │ PostgreSQL
                                          ┌─────────▼─────────┐
-                                         │  MiniGrc.Agent     │  (references Application + Domain)
+                                         │  Augur.Agent     │  (references Application + Domain)
                                          │ LLM client +       │
                                          │ deterministic brain│
                                          └────────────────────┘
@@ -81,7 +81,7 @@ No handler ever touches `DbContext` or `Npgsql` directly - only the `IUnitOfWork
 
 ## The agent (M5) - design & failure modes
 
-`MiniGrc.Agent` turns raw security input into mapped, actionable findings.
+`Augur.Agent` turns raw security input into mapped, actionable findings.
 
 - **Input:** a source name, a format (`json` for tool exports, `text` for policy prose), the raw
   payload, and a target framework (`Soc2` / `Iso27001`).
@@ -148,23 +148,23 @@ curl -X POST http://localhost:5050/mcp \
 
 ```bash
 # 1. Postgres (Docker)
-docker run -d --name minigrc-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=minigrc -p 5432:5432 postgres:16
+docker run -d --name augur-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=augur -p 5432:5432 postgres:16
 
 # 2. Apply migrations + run the API (seeds 4 demo controls on first run)
-dotnet run --project src/MiniGrc.Api/MiniGrc.Api.csproj --urls http://localhost:5050
+dotnet run --project src/Augur.Api/Augur.Api.csproj --urls http://localhost:5050
 
 # 3. In another terminal, run the Blazor front end (expects the API on :5050)
-dotnet run --project src/MiniGrc.Web/MiniGrc.Web.csproj --urls http://localhost:5000
+dotnet run --project src/Augur.Web/Augur.Web.csproj --urls http://localhost:5000
 ```
 
 - API docs: http://localhost:5050/swagger  ·  OpenAPI 3.1.1 spec: http://localhost:5050/openapi/v1.json
 - App: http://localhost:5000  (Dashboard · Controls · Evidence · Agent)
 
-Connection string and agent settings live in `src/MiniGrc.Api/appsettings.json`:
+Connection string and agent settings live in `src/Augur.Api/appsettings.json`:
 
 ```json
 {
-  "ConnectionStrings": { "MiniGrc": "Host=localhost;Port=5432;Database=minigrc;Username=postgres;Password=postgres" },
+  "ConnectionStrings": { "Augur": "Host=localhost;Port=5432;Database=augur;Username=postgres;Password=postgres" },
   "Agent": { "LlmEndpoint": "", "Model": "local-model" }
 }
 ```
@@ -172,9 +172,9 @@ Connection string and agent settings live in `src/MiniGrc.Api/appsettings.json`:
 ## Tests
 
 ```bash
-dotnet test MiniGrc.slnx                      # unit tests (handlers, in-memory UoW)
+dotnet test Augur.slnx                      # unit tests (handlers, in-memory UoW)
 # E2E requires both apps running (see Setup):
-dotnet test tests/MiniGrc.E2E/MiniGrc.E2E.csproj
+dotnet test tests/Augur.E2E/Augur.E2E.csproj
 ```
 
 The E2E suite drives the four core flows using **`data-testid` selectors only** (no brittle CSS),
@@ -186,7 +186,7 @@ exercising create-control → upload-evidence → run-agent → view-status agai
 
 - **Nullable reference types on everywhere**; the build is warning-clean (`dotnet build` → 0 warnings).
 - **No inline styling.** Component styles live in co-located `*.razor.scss` files, compiled to
-  Blazor CSS-isolation `*.razor.css` by a pre-build `sass` target in `MiniGrc.ComponentLib.csproj`.
+  Blazor CSS-isolation `*.razor.css` by a pre-build `sass` target in `Augur.ComponentLib.csproj`.
   Interactive elements carry `data-testid` for Playwright.
 - `NU1903` are advisory transitive-dependency warnings (Npgsql → `System.Security.Cryptography.Xml`,
   SwaggerUI → `Microsoft.OpenApi 2.0.0`); suppressed solution-wide in `Directory.Build.props` with a
@@ -198,15 +198,15 @@ exercising create-control → upload-evidence → run-agent → view-status agai
 
 ```
 src/
-  MiniGrc.Domain/        entities, enums, repository ports, IUnitOfWork
-  MiniGrc.Application/   CQRS commands/queries, handlers, FluentValidation, MediatR pipeline, Mapster
-  MiniGrc.Infrastructure/ EF Core DbContext, repository impls, PostgreSQL migrations
-  MiniGrc.Api/           ASP.NET Core controllers, OpenAPI 3.1.1 + XML docs, MCP bridge, agent endpoint
-  MiniGrc.Api/Mcp/       McpToolBinder routing MediatR calls through /mcp JSON-RPC
-  MiniGrc.Agent/         LLM client, ControlCatalog, deterministic analyzer, orchestration
-  MiniGrc.ComponentLib/  GrcBase shared Blazor components (.razor + .razor.scss)
-  MiniGrc.Web/           Blazor front end (Dashboard, Controls, Evidence, Agent pages)
+  Augur.Domain/        entities, enums, repository ports, IUnitOfWork
+  Augur.Application/   CQRS commands/queries, handlers, FluentValidation, MediatR pipeline, Mapster
+  Augur.Infrastructure/ EF Core DbContext, repository impls, PostgreSQL migrations
+  Augur.Api/           ASP.NET Core controllers, OpenAPI 3.1.1 + XML docs, MCP bridge, agent endpoint
+  Augur.Api/Mcp/       McpToolBinder routing MediatR calls through /mcp JSON-RPC
+  Augur.Agent/         LLM client, ControlCatalog, deterministic analyzer, orchestration
+  Augur.ComponentLib/  GrcBase shared Blazor components (.razor + .razor.scss)
+  Augur.Web/           Blazor front end (Dashboard, Controls, Evidence, Agent pages)
 tests/
-  MiniGrc.UnitTests/     handler tests against an in-memory IUnitOfWork
-  MiniGrc.E2E/           Playwright flows over data-testid selectors
+  Augur.UnitTests/     handler tests against an in-memory IUnitOfWork
+  Augur.E2E/           Playwright flows over data-testid selectors
 ```

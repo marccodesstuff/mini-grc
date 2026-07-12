@@ -1,15 +1,15 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/MiniGrc.Agent/MiniGrc.Agent.csproj" />
-    <Project Path="src/MiniGrc.Api/MiniGrc.Api.csproj" />
-    <Project Path="src/MiniGrc.Application/MiniGrc.Application.csproj" />
-    <Project Path="src/MiniGrc.ComponentLib/MiniGrc.ComponentLib.csproj" />
-    <Project Path="src/MiniGrc.Domain/MiniGrc.Domain.csproj" />
-    <Project Path="src/MiniGrc.Infrastructure/MiniGrc.Infrastructure.csproj" />
-    <Project Path="src/MiniGrc.Web/MiniGrc.Web.csproj" />
+    <Project Path="src/Augur.Agent/Augur.Agent.csproj" />
+    <Project Path="src/Augur.Api/Augur.Api.csproj" />
+    <Project Path="src/Augur.Application/Augur.Application.csproj" />
+    <Project Path="src/Augur.ComponentLib/Augur.ComponentLib.csproj" />
+    <Project Path="src/Augur.Domain/Augur.Domain.csproj" />
+    <Project Path="src/Augur.Infrastructure/Augur.Infrastructure.csproj" />
+    <Project Path="src/Augur.Web/Augur.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/MiniGrc.E2E/MiniGrc.E2E.csproj" />
-    <Project Path="tests/MiniGrc.UnitTests/MiniGrc.UnitTests.csproj" />
+    <Project Path="tests/Augur.E2E/Augur.E2E.csproj" />
+    <Project Path="tests/Augur.UnitTests/Augur.UnitTests.csproj" />
   </Folder>
 </Solution>

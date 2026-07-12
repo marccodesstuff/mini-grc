@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Augur.Application\Augur.Application.csproj" />
+    <ProjectReference Include="..\Augur.ComponentLib\Augur.ComponentLib.csproj" />
+  </ItemGroup>
+
+  <!--
+    M3 rule: component-scoped .scss only, no inline styling.
+    Author page/component styles as *.razor.scss and compile to the native Blazor CSS-isolation
+    files (*.razor.css) with dart-sass before the Razor compile.
+  -->
+  <Target Name="CompileScssToRazorCss" BeforeTargets="BeforeCompile;AssignRazorComponentOutputs">
+    <Exec Command="npx --yes sass --no-source-map --load-path=$(MSBuildProjectDirectory) $(MSBuildProjectDirectory):$(MSBuildProjectDirectory)"
+          ContinueOnError="true" />
+  </Target>
+
+</Project>
+
