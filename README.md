@@ -118,15 +118,20 @@ A thin JSON-RPC bridge at **`POST /mcp`** exposes Mini-GRC tools to any MCP-comp
 surface it actually needs (`tools/list` + `tools/call`). The same handlers serve the REST API,
 Blazor UI, and MCP clients — no duplicate orchestration.
 
+All REST endpoints and `/mcp` require an API key in the `X-Api-Key` header (configured via
+`Auth:ApiKey`; the checked-in value is a local dev default that must be overridden in production).
+
 ```bash
 # List tools
 curl -X POST http://localhost:5050/mcp \
   -H "Content-Type: application/json" \
+  -H "X-Api-Key: dev-local-key-change-me" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 
 # Run agent via MCP
 curl -X POST http://localhost:5050/mcp \
   -H "Content-Type: application/json" \
+  -H "X-Api-Key: dev-local-key-change-me" \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"agent.run","arguments":{"source":"dependabot","format":"json","content":"...","framework":"Soc2"}}}'
 ```
 

@@ -13,6 +13,8 @@ using MiniGrc.Agent;
 using MediatR;
 using MiniGrc.Application.Commands;
 using MiniGrc.Api.Mcp;
+using MiniGrc.Api.Auth;
+using Microsoft.AspNetCore.Authentication;
 
 namespace MiniGrc.Api;
 
@@ -45,6 +47,15 @@ public sealed class Program
                 // OpenAPI document are human-readable and match what the Blazor front end sends.
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
+
+        // ---- Authentication (API key) ----
+        // Every controller and the /mcp endpoint require a valid X-Api-Key header. This is the
+        // trust boundary for the write operations that mutate the compliance record.
+        builder.Services
+            .AddAuthentication(ApiKeyAuthenticationHandler.SchemeName)
+            .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+                ApiKeyAuthenticationHandler.SchemeName, _ => { });
+        builder.Services.AddAuthorization();
 
         // ---- CORS for the Blazor front end (dev + preview) ----
         builder.Services.AddCors(options =>
@@ -84,7 +95,9 @@ public sealed class Program
 
         app.UseRouting();
         app.UseCors("BlazorClient");
-        app.MapControllers();
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.MapControllers().RequireAuthorization();
         app.MapOpenApi();
         app.MapPost("/mcp", async context =>
         {
@@ -101,7 +114,7 @@ public sealed class Program
             };
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(result, context.RequestAborted);
-        });
+        }).RequireAuthorization();
         app.Run();
     }
 
@@ -136,9 +149,16 @@ public sealed class Program
         builder.Services.AddScoped<McpToolBinder>();
         builder.Services.AddControllers();
         builder.Services.AddOpenApi();
+        builder.Services
+            .AddAuthentication(ApiKeyAuthenticationHandler.SchemeName)
+            .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+                ApiKeyAuthenticationHandler.SchemeName, _ => { });
+        builder.Services.AddAuthorization();
         var app = builder.Build();
         app.UseRouting();
-        app.MapControllers();
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.MapControllers().RequireAuthorization();
         app.MapOpenApi();
         return app;
     }
